@@ -56,3 +56,4 @@ Architectural engineering knowledge
 Acknowledgments
 This project is inspired by advancements in AI-assisted design and architectural automation.
 Thanks to open educational resources and the Building AI course by the University of Helsinki and Reaktor Innovations.
+It's a preliminary project idea that I'm currently working on developing more professionally.
