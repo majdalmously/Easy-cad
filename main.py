@@ -1,26 +1,26 @@
-import matplotlib.pyplot as plt
+import ezdxf
 
-class AICadGenerator:
+class DXFCadGenerator:
     def __init__(self, width, height, rooms):
         self.width = width
         self.height = height
         self.rooms = rooms
 
-    def generate(self):
-        fig, ax = plt.subplots()
+    def create_dxf(self, filename="floor_plan.dxf"):
+        doc = ezdxf.new()
+        msp = doc.modelspace()
 
-        # Draw boundary
-        ax.plot(
-            [0, self.width, self.width, 0, 0],
-            [0, 0, self.height, self.height, 0]
-        )
+        # Draw outer boundary
+        msp.add_lwpolyline([
+            (0, 0),
+            (self.width, 0),
+            (self.width, self.height),
+            (0, self.height),
+            (0, 0)
+        ])
 
         num_rooms = len(self.rooms)
-
-        # Better grid calculation
-        cols = int(num_rooms ** 0.5)
-        if cols == 0:
-            cols = 1
+        cols = max(1, int(num_rooms ** 0.5))
         rows = (num_rooms // cols) + (num_rooms % cols > 0)
 
         room_w = self.width / cols
@@ -36,40 +36,29 @@ class AICadGenerator:
                 x = c * room_w
                 y = r * room_h
 
-                # Draw room
-                ax.add_patch(
-                    plt.Rectangle(
-                        (x, y),
-                        room_w,
-                        room_h,
-                        fill=False,
-                        edgecolor="black",
-                        linewidth=2
-                    )
-                )
+                # Room rectangle
+                msp.add_lwpolyline([
+                    (x, y),
+                    (x + room_w, y),
+                    (x + room_w, y + room_h),
+                    (x, y + room_h),
+                    (x, y)
+                ])
 
-                # Label room
-                ax.text(
-                    x + room_w / 2,
-                    y + room_h / 2,
+                # Room label
+                msp.add_text(
                     self.rooms[index],
-                    ha='center',
-                    va='center',
-                    fontsize=10
-                )
+                    dxfattribs={'height': 0.5}
+                ).set_placement((x + room_w/2, y + room_h/2))
 
                 index += 1
 
-        ax.set_xlim(0, self.width)
-        ax.set_ylim(0, self.height)
-        ax.set_aspect('equal')
-        ax.set_title("AI CAD Generator - Pro Version")
-
-        plt.show()
+        doc.saveas(filename)
+        print(f"DXF file created: {filename}")
 
 
 def get_user_input():
-    print("=== AI CAD Generator ===")
+    print("=== AI DXF CAD Generator ===")
 
     width = float(input("Enter land width: "))
     height = float(input("Enter land height: "))
@@ -78,8 +67,7 @@ def get_user_input():
     n = int(input("How many rooms? "))
 
     for i in range(n):
-        name = input(f"Enter name of room {i+1}: ")
-        rooms.append(name)
+        rooms.append(input(f"Room {i+1} name: "))
 
     return width, height, rooms
 
@@ -87,5 +75,5 @@ def get_user_input():
 if __name__ == "__main__":
     w, h, rooms = get_user_input()
 
-    cad = AICadGenerator(w, h, rooms)
-    cad.generate()
+    cad = DXFCadGenerator(w, h, rooms)
+    cad.create_dxf()
