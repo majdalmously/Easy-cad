@@ -1,77 +1,91 @@
 import matplotlib.pyplot as plt
 
-def generate_floor_plan(width, height, rooms):
-    """
-    Simple AI-inspired floor plan generator (MVP version)
-    """
+class AICadGenerator:
+    def __init__(self, width, height, rooms):
+        self.width = width
+        self.height = height
+        self.rooms = rooms
 
-    fig, ax = plt.subplots()
+    def generate(self):
+        fig, ax = plt.subplots()
 
-    # Draw outer boundary of the land
-    ax.plot([0, width, width, 0, 0], [0, 0, height, height, 0])
+        # Draw boundary
+        ax.plot(
+            [0, self.width, self.width, 0, 0],
+            [0, 0, self.height, self.height, 0]
+        )
 
-    # Grid layout calculation
-    num_rooms = len(rooms)
-    cols = int(num_rooms ** 0.5) + 1
-    rows = (num_rooms // cols) + 1
+        num_rooms = len(self.rooms)
 
-    room_width = width / cols
-    room_height = height / rows
+        # Better grid calculation
+        cols = int(num_rooms ** 0.5)
+        if cols == 0:
+            cols = 1
+        rows = (num_rooms // cols) + (num_rooms % cols > 0)
 
-    index = 0
+        room_w = self.width / cols
+        room_h = self.height / rows
 
-    # Place rooms in grid
-    for r in range(rows):
-        for c in range(cols):
-            if index >= num_rooms:
-                break
+        index = 0
 
-            x = c * room_width
-            y = r * room_height
+        for r in range(rows):
+            for c in range(cols):
+                if index >= num_rooms:
+                    break
 
-            # Draw room rectangle
-            rect = plt.Rectangle(
-                (x, y),
-                room_width,
-                room_height,
-                fill=False,
-                edgecolor="black"
-            )
-            ax.add_patch(rect)
+                x = c * room_w
+                y = r * room_h
 
-            # Add room label
-            ax.text(
-                x + room_width / 2,
-                y + room_height / 2,
-                rooms[index],
-                ha='center',
-                va='center'
-            )
+                # Draw room
+                ax.add_patch(
+                    plt.Rectangle(
+                        (x, y),
+                        room_w,
+                        room_h,
+                        fill=False,
+                        edgecolor="black",
+                        linewidth=2
+                    )
+                )
 
-            index += 1
+                # Label room
+                ax.text(
+                    x + room_w / 2,
+                    y + room_h / 2,
+                    self.rooms[index],
+                    ha='center',
+                    va='center',
+                    fontsize=10
+                )
 
-    # Formatting
-    ax.set_xlim(0, width)
-    ax.set_ylim(0, height)
-    ax.set_aspect('equal')
-    ax.set_title("AI-Based Simple Floor Plan Generator")
+                index += 1
 
-    plt.show()
+        ax.set_xlim(0, self.width)
+        ax.set_ylim(0, self.height)
+        ax.set_aspect('equal')
+        ax.set_title("AI CAD Generator - Pro Version")
+
+        plt.show()
 
 
-# =========================
-# Example Usage
-# =========================
+def get_user_input():
+    print("=== AI CAD Generator ===")
+
+    width = float(input("Enter land width: "))
+    height = float(input("Enter land height: "))
+
+    rooms = []
+    n = int(input("How many rooms? "))
+
+    for i in range(n):
+        name = input(f"Enter name of room {i+1}: ")
+        rooms.append(name)
+
+    return width, height, rooms
+
+
 if __name__ == "__main__":
-    width = 20   # land width
-    height = 15  # land height
+    w, h, rooms = get_user_input()
 
-    rooms = [
-        "Living Room",
-        "Kitchen",
-        "Bedroom 1",
-        "Bedroom 2",
-        "Bathroom"
-    ]
-
-    generate_floor_plan(width, height, rooms)
+    cad = AICadGenerator(w, h, rooms)
+    cad.generate()
